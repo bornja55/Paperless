@@ -3,7 +3,48 @@ from tkinter import ttk
 from tkcalendar import DateEntry #ปฏิทิน
 from datetime import datetime #จัดการวันเวลา
 import csv
+################################################################ DB
 
+import sqlite3
+
+conn = sqlite3.connect('24CS.sqlite3')
+c = conn.cursor()
+
+c.execute("""CREATE TABLE IF NOT EXISTS borrow_return_form (
+            ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            v_doc_type TEXT,
+            v_date TEXT,
+            v_name_th TEXT,
+            v_name_en TEXT,
+            v_emp_id TEXT,
+            v_department TEXT,
+            v_section TEXT,
+            v_email TEXT,
+            v_tel TEXT,
+            v_asset TEXT,
+            v_purpose TEXT,
+            v_location TEXT,
+            v_start_date TEXT,
+            v_end_date TEXT)""")
+
+
+def insert_cause(v_doc_type, v_date, v_name_th, v_name_en, v_emp_id, v_department, v_section, v_email, v_tel, v_asset, v_purpose, v_location, v_start_date, v_end_date):
+    with conn:
+        command = 'INSERT INTO borrow_return_form VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+        c.execute(command,(None,v_doc_type, v_date, v_name_th, v_name_en, v_emp_id, v_department, v_section, v_email, v_tel, v_asset, v_purpose, v_location, v_start_date, v_end_date))
+    conn.commit()
+    print('Save')
+
+
+def view_cause():
+    with conn:
+        command = 'SELECT * FROM borrow_return_form'
+        c.execute(command)
+        result = c.fetchall()
+    print(result)
+    return result
+
+######################################################################### DB
 # สร้าง windows
 GUI = Tk()
 GUI.geometry('600x800')
@@ -87,6 +128,7 @@ doc_type_combo = ttk.Combobox(main_frame, textvariable=v_doc_type, values=["ย�
 doc_type_combo.grid(column=1, row=16, sticky=(W,E), pady=5)
 doc_type_combo.current(0)  # เลือก "ยืม" เป็นค่าเริ่มต้น
 
+
 def writetocsv(data):
     with open('24CSITF07_data.csv', 'a', newline='', encoding='utf-8') as file:
         fw = csv.writer(file)
@@ -94,8 +136,9 @@ def writetocsv(data):
 
 def Save():
     data = [v_doc_type.get(),v_date.get(), v_name_th.get(), v_name_en.get(), v_emp_id.get(),v_department.get(), v_section.get(), v_email.get(), v_tel.get(),v_asset.get(),v_purpose.get(), v_location.get(), v_start_date.get(), v_end_date.get()]
-    writetocsv(data)
+    #writetocsv(data)
     print("บันทึกข้อมูลเรียบร้อยแล้ว")
+    insert_cause(*data) #ใช้ * เพื่อแตกลิสต์
     # เคลียร์ข้อมูลในฟอร์ม
     for var in [v_name_th, v_name_en, v_emp_id, v_department, v_section, v_email, v_tel, v_asset, v_purpose, v_location]:
         var.set('')
